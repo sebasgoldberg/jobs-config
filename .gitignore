@@ -1,0 +1,11 @@
+node_modules
+bower_components
+transp
+dist
+*.swp
+*.un~
+package-lock.json
+*.tar.gz
+*.swo
+__pycache__
+*.xls
