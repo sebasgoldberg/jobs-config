@@ -55,7 +55,7 @@ class CO_ML_IDXConfig(Config):
     def maintenance_execution(self):
 
         START_DATETIME = datetime.datetime(2018, 7, 3, 22)
-        PERIOD_FROM = datetime.datetime(2016, 7, 1)
+        PERIOD_FROM = datetime.datetime(2016, 6, 1)
         PERIOD_TO = '210001'
 
         super(CO_ML_IDXConfig, self).__init__()
@@ -282,28 +282,31 @@ class FI_DOCUMNTConfig(Config):
 
     def __init__(self):
 
-        START_DATETIME = datetime.datetime.now() + datetime.timedelta(days=1)
+        START_DATETIME = datetime.datetime(2018, 6, 20, 18)
         EXECUTION_INTERVAL = 24*60*60
         PERIOD_FROM = datetime.datetime(2010, 11, 1)
-        PERIOD_TO = '201305'
+        PERIOD_TO = '201607'
         
         super(FI_DOCUMNTConfig, self).__init__()
         
         job = Job('ARV_FI_DOCUMNT', start_datetime=START_DATETIME)
-        step = Step('FI_DOCUMNT_WRI','BDC_RETAIL',1,False)
+        step = Step('FI_DOCUMNT_WRI','BDC_RETAIL')
         step.add_screen_item(ScreenItemYearDeltaByPeriod(PERIOD_FROM,'P_VGJAHR'))
         step.add_screen_item(ScreenItemPeriodDeltaByPeriod(PERIOD_FROM,'P_VMONAT'))
         step.add_screen_item(ScreenItemYearDeltaByPeriod(PERIOD_FROM,'P_BGJAHR'))
         step.add_screen_item(ScreenItemPeriodDeltaByPeriod(PERIOD_FROM,'P_BMONAT'))
-        step.add_screen_item(ScreenItem('P_CPUTG', ''))
-        step.add_screen_item(ScreenItem('P_STAG', ''))
+        step.add_screen_item(ScreenItem('P_CPUTG', '731'))
+        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=1), 'P_STAG', START_DATETIME.strftime('%Y%m%d')))
+        step.add_screen_item(ScreenItem('P_WRITST', ' '))
         step.add_screen_item(ScreenItem('P_WRIPRD', 'X'))
         step.add_screen_item(ScreenItem('P_DELTST', ' '))
         step.add_screen_item(ScreenItemYearPeriodDeltaByPeriod(PERIOD_FROM, 'P_COMENT'))
         job.add_step(step)
-        while (job.get_screen_item('P_COMENT').low < PERIOD_TO):
+        while (job.get_screen_item('P_COMENT').low <= PERIOD_TO):
             self.add_job(job)
-            job = job.next(datetime.timedelta(seconds=(EXECUTION_INTERVAL)))
+            job = job.next(
+                ExecutionInterval(datetime.timedelta(seconds=(EXECUTION_INTERVAL)))
+                )
 
 
 import sys
@@ -332,6 +335,8 @@ def main(configtypes):
             c = WINDConfig()
         elif configtype == 'MM_EKKO':
             c = MM_EKKOConfig()
+        elif configtype == 'FI_DOCUMNT':
+            c = FI_DOCUMNTConfig()
         else:
             print('Configuração "%s" não reconhecida.')
         c.save('./%s.xls' % configtype)

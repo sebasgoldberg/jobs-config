@@ -70,7 +70,7 @@ class ExecutionInterval(BaseExecutionInterval):
 
     def next_datetime(self, actual_datetime):
 
-        return actual_datetime + delta
+        return actual_datetime + self.delta
 
 
 WORKDAY_FROM = datetime.time(8)
@@ -130,10 +130,7 @@ class Job:
     def get_next_steps(self):
         return [s.next() for s in self.steps]
 
-    def next(self, delta=None, workday_delta=None):
-
-        WORKDAY_FROM = datetime.time(8)
-        WORKDAY_TO = datetime.time(20)
+    def next(self, delta=NoneExecutionInterval()):
 
         start_datetime = delta.next_datetime(self.start_datetime)
 
