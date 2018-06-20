@@ -49,8 +49,65 @@ class Config:
                         line = self.get_line(job, step, screen_item)
                         f.write(line+'\n')
 
-class Job:
+class BaseExecutionInterval:
 
+    def next_datetime(self, actual_datetime):
+
+        raise Exception('Not Implemented')
+
+class NoneExecutionInterval(BaseExecutionInterval):
+
+    def next_datetime(self, actual_datetime):
+
+        return None
+
+
+class ExecutionInterval(BaseExecutionInterval):
+
+    def __init__(self, delta):
+        super(ExecutionInterval, self).__init__()
+        self.delta = delta
+
+    def next_datetime(self, actual_datetime):
+
+        return actual_datetime + delta
+
+
+WORKDAY_FROM = datetime.time(8)
+WORKDAY_TO = datetime.time(20)
+
+class WorkdayExecutionInterval(ExecutionInterval):
+    
+    def __init__(self, delta, workday_delta, workday_from=WORKDAY_FROM, workday_to=WORKDAY_TO):
+        super(WorkdayExecutionInterval, self).__init__(delta)
+        self.workday_delta = workday_delta
+        self.workday_from = workday_from 
+        self.workday_to = workday_to 
+
+    def next_datetime(self, actual_datetime):
+
+
+        start_datetime = super(WorkdayExecutionInterval, self).next_datetime()
+
+        if self.workday_from < start_datetime.time() < self.workday_to:
+            start_datetime = self.start_datetime + self.workday_delta
+
+        return start_datetime
+
+
+class MonthlyExecutionInterval(BaseExecutionInterval):
+
+    def __init__(self):
+        super(MonthlyExecutionInterval, self).__init__()
+
+    def next_datetime(self, actual_datetime):
+        day = actual_datetime.day
+        dt1 = actual_datetime.replace(day=1)
+        dt2 = dt1 + datetime.timedelta(days=32)
+        return dt2.replace(day=day)
+
+
+class Job:
 
     def __init__(self, jobname_prefix, start_datetime=None, jobid=1, steps=[]):
         self.jobname_prefix = jobname_prefix
@@ -78,11 +135,7 @@ class Job:
         WORKDAY_FROM = datetime.time(8)
         WORKDAY_TO = datetime.time(20)
 
-        start_datetime = self.start_datetime + delta
-        if delta:
-            if workday_delta is not None:
-                if WORKDAY_FROM < start_datetime.time() < WORKDAY_TO:
-                    start_datetime = self.start_datetime + workday_delta
+        start_datetime = delta.next_datetime(self.start_datetime)
 
         return Job(
             self.jobname_prefix,
@@ -123,6 +176,7 @@ class Step:
         for si in reversed(self.screen_items):
             if si.selname == name:
                 return si
+        raise Exception('Screen item %s not found' % name)
 
 class ScreenItem:
 

@@ -31,15 +31,15 @@ class PP_BKFLUSHConfig(Config):
 
 class CO_ML_IDXConfig(Config):
 
-    def __init__(self):
+    def primary_execution(self):
 
         START_DATETIME = datetime.datetime(2018, 5, 14, 22)
         EXECUTION_INTERVAL = 24*60*60
         PERIOD_FROM = datetime.datetime(2013, 7, 1)
         PERIOD_TO = '201607'
-        
+
         super(CO_ML_IDXConfig, self).__init__()
-        
+
         job = Job('ARV_CO_ML_IDX', start_datetime=START_DATETIME)
         step = Step('SAPRCKMM','BDC_RETAIL',1,False)
         step.add_screen_item(ScreenItemYearDeltaByPeriod(PERIOD_FROM,'H_BDATJ'))
@@ -52,6 +52,28 @@ class CO_ML_IDXConfig(Config):
             self.add_job(job)
             job = job.next(datetime.timedelta(seconds=(EXECUTION_INTERVAL)))
 
+    def maintenance_execution(self):
+
+        START_DATETIME = datetime.datetime(2018, 7, 3, 22)
+        PERIOD_FROM = datetime.datetime(2016, 7, 1)
+        PERIOD_TO = '210001'
+
+        super(CO_ML_IDXConfig, self).__init__()
+
+        job = Job('ARV_CO_ML_IDX', start_datetime=START_DATETIME)
+        step = Step('SAPRCKMM','BDC_RETAIL')
+        step.add_screen_item(ScreenItemYearDeltaByPeriod(PERIOD_FROM,'H_BDATJ'))
+        step.add_screen_item(ScreenItemPeriodDeltaByPeriod(PERIOD_FROM,'H_POPER'))
+        step.add_screen_item(ScreenItem('TESTRUN', ' '))
+        step.add_screen_item(ScreenItem('S_CREATE', 'X'))
+        step.add_screen_item(ScreenItemYearPeriodDeltaByPeriod(PERIOD_FROM, 'PA_TEXT'))
+        job.add_step(step)
+        while (job.get_screen_item('PA_TEXT').low < PERIOD_TO):
+            self.add_job(job)
+            job = job.next(MonthlyExecutionInterval())
+
+    def __init__(self):
+        self.maintenance_execution()
 
 class CO_ITEMConfig(Config):
 
@@ -175,17 +197,17 @@ class S623Config(Config):
         #SL_SPTAG_FROM = '20170106'
         #SL_SPTAG_FROM_HIGH = '20170112'
         #SL_SPTAG_TO = '20180131'
-        SL_SPTAG_FROM = '20170430'
-        SL_SPTAG_FROM_HIGH = '20170506'
-        SL_SPTAG_TO = '20180421'
+        SL_SPTAG_FROM = '20180325'
+        #SL_SPTAG_FROM_HIGH = '20180520'
+        SL_SPTAG_TO = '20180521'
 
         super(S623Config, self).__init__()
-        job = Job('DEL_S623_DEIXA_90_DIAS')
+        job = Job('ARV_S623_DEIXA_30_DIAS')
         step = Step('RMCA6235','')
         step.add_screen_item(ScreenItem('VRSIO', '000'))
-        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'SL_SPTAG', SL_SPTAG_FROM, 'S', 'I', 'BT', SL_SPTAG_FROM_HIGH))
+        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=1), 'SL_SPTAG', SL_SPTAG_FROM, 'S', 'I', 'EQ'))
         step.add_screen_item(ScreenItem('F_O_DEL', 'X'))
-        while (step.get_screen_item('SL_SPTAG').high < SL_SPTAG_TO):
+        while (step.get_screen_item('SL_SPTAG').low < SL_SPTAG_TO):
             job.add_step(step)
             step = step.next()
         self.add_job(job)
