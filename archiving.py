@@ -77,17 +77,15 @@ class CO_ML_IDXConfig(Config):
 
 class CO_ITEMConfig(Config):
 
-    def __init__(self):
+    def primary_execution(self):
 
         START_DATETIME = datetime.datetime(2018, 5, 14, 19, 30)
         EXECUTION_INTERVAL = 24*60*60
         PERIOD_FROM = datetime.datetime(2013, 5, 1)
         PERIOD_TO = '201607'
-        
-        super(CO_ITEMConfig, self).__init__()
-        
+
         job = Job('ARV_CO_ITEM', start_datetime=START_DATETIME)
-        step = Step('CO_ITEM_WRI','BDC_RETAIL',1,False)
+        step = Step('CO_ITEM_WRI','BDC_RETAIL')
         step.add_screen_item(ScreenItemYearDeltaByPeriod(PERIOD_FROM,'BISJA'))
         step.add_screen_item(ScreenItemPeriodDeltaByPeriod(PERIOD_FROM,'BISPE'))
         step.add_screen_item(ScreenItem('P_WRITST', ' '))
@@ -98,6 +96,31 @@ class CO_ITEMConfig(Config):
         while (job.get_screen_item('P_COMENT').low < PERIOD_TO):
             self.add_job(job)
             job = job.next(datetime.timedelta(seconds=(EXECUTION_INTERVAL)))
+
+    def maintenance_execution(self):
+
+        START_DATETIME = datetime.datetime(2018, 7, 4, 22)
+        PERIOD_FROM = datetime.datetime(2016, 6, 1)
+        PERIOD_TO = '210001'
+
+        job = Job('ARV_CO_ITEM', start_datetime=START_DATETIME)
+        step = Step('CO_ITEM_WRI','BDC_RETAIL')
+        step.add_screen_item(ScreenItemYearDeltaByPeriod(PERIOD_FROM,'BISJA'))
+        step.add_screen_item(ScreenItemPeriodDeltaByPeriod(PERIOD_FROM,'BISPE'))
+        step.add_screen_item(ScreenItem('P_WRITST', ' '))
+        step.add_screen_item(ScreenItem('P_WRIPRD', 'X'))
+        step.add_screen_item(ScreenItem('P_DELTST', ' '))
+        step.add_screen_item(ScreenItemYearPeriodDeltaByPeriod(PERIOD_FROM, 'P_COMENT'))
+        job.add_step(step)
+        while (job.get_screen_item('P_COMENT').low < PERIOD_TO):
+            self.add_job(job)
+            job = job.next(MonthlyExecutionInterval())
+
+    def __init__(self):
+
+        super(CO_ITEMConfig, self).__init__()
+        
+        self.maintenance_execution()
 
 
 class MM_MATBELConfig(Config):
