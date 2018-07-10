@@ -125,92 +125,133 @@ class CO_ITEMConfig(Config):
 
 class MM_MATBELConfig(Config):
 
-    def __init__(self):
+    START_DATETIME = datetime.datetime(2018, 7, 10, 12)
+    S_BUDAT_FROM = '20120504'
+    S_BUDAT_TO = '20160711'
+    EXECUTION_INTERVAL = 60*60
 
-        START_DATETIME = datetime.datetime(2018, 6, 11, 20)
-        S_BUDAT_FROM = '20150314'
-        S_BUDAT_TO = '20160702'
-        EXECUTION_INTERVAL = 60*60
-        #WORKDAY_EXECUTION_INTERVAL = 120*60
+    def _create_step(self, _pos):
 
-        super(MM_MATBELConfig, self).__init__()
-        job = Job('ARV_MM_MATBEL', start_datetime=START_DATETIME)
         step = Step('RM07MARCS','BDC_RETAIL')
-        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=1), 'S_BUDAT', S_BUDAT_FROM, 'S', 'I', 'EQ'))
-        step.add_screen_item(ScreenItem('POS', 'X'))
+        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=1), 'S_BUDAT', MM_MATBELConfig.S_BUDAT_FROM, 'S', 'I', 'EQ'))
+        step.add_screen_item(ScreenItem('POS', _pos))
         step.add_screen_item(ScreenItem('P_WRITST', ' '))
         step.add_screen_item(ScreenItem('P_WRIPRD', 'X'))
         step.add_screen_item(ScreenItem('P_DELTST', ' '))
-        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=1), 'P_COMENT', S_BUDAT_FROM))
+        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=1), 'P_COMENT', MM_MATBELConfig.S_BUDAT_FROM))
+        return step
+
+    def __init__(self):
+
+        #WORKDAY_EXECUTION_INTERVAL = 120*60
+
+        super(MM_MATBELConfig, self).__init__()
+        job = Job('ARV_MM_MATBEL', start_datetime=MM_MATBELConfig.START_DATETIME)
+
+        step = self._create_step(' ')
         job.add_step(step)
-        while (job.get_screen_item('S_BUDAT').low < S_BUDAT_TO):
+
+        step = self._create_step('X')
+        job.add_step(step)
+
+        while (job.get_screen_item('S_BUDAT').low <= MM_MATBELConfig.S_BUDAT_TO):
             self.add_job(job)
-            job = job.next(datetime.timedelta(seconds=(EXECUTION_INTERVAL)))
+            job = job.next(ExecutionInterval(datetime.timedelta(seconds=(MM_MATBELConfig.EXECUTION_INTERVAL))))
 
 
 class SD_VTTKConfig(Config):
 
     def __init__(self):
 
-        S_ERDAT_FROM = '20101101'
-        S_ERDAT_FROM_HIGH = '20101107'
-        S_ERDAT_TO = '20160427'
+        S_ERDAT_FROM = '20150301'
+        S_ERDAT_FROM_HIGH = '20150307'
+        S_ERDAT_TO = '20150531'
+        START_DATETIME = datetime.datetime(2018, 7, 6, 11)
+        EXECUTION_INTERVAL = 20*60
 
         super(SD_VTTKConfig, self).__init__()
-        job = Job('ARV_SD_VTTK')
+        job = Job('ARV_SD_VTTK', start_datetime=START_DATETIME)
         step = Step('SDVTTKWRS','BDC_RETAIL')
         step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'S_ERDAT', S_ERDAT_FROM, 'S', 'I', 'BT', S_ERDAT_FROM_HIGH))
         step.add_screen_item(ScreenItem('P_WRITST', ' '))
         step.add_screen_item(ScreenItem('P_WRIPRD', 'X'))
         step.add_screen_item(ScreenItem('P_DELTST', ' '))
         step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'P_COMENT', S_ERDAT_FROM))
-        while (step.get_screen_item('S_ERDAT').low < S_ERDAT_TO):
-            job.add_step(step)
-            step = step.next()
-        self.add_job(job)
+
+        job.add_step(step)
+
+        while (job.get_screen_item('S_ERDAT').low <= S_ERDAT_TO):
+            self.add_job(job)
+            job = job.next(ExecutionInterval(datetime.timedelta(seconds=(EXECUTION_INTERVAL))))
+
+
 
 class RV_LIKPConfig(Config):
 
     def __init__(self):
 
-        SO_ERDAT_FROM = '20101101'
-        SO_ERDAT_FROM_HIGH = '20101107'
-        SO_ERDAT_TO = '20160427'
+        SO_ERDAT_FROM = '20150501'
+        SO_ERDAT_FROM_HIGH = '20150507'
+        SO_ERDAT_TO = '20150531'
+        START_DATETIME = datetime.datetime(2018, 7, 6, 15, 40)
+        EXECUTION_INTERVAL = 20*60
 
         super(RV_LIKPConfig, self).__init__()
-        job = Job('ARV_RV_LIKP')
-        step = Step('S3LIKPWRS','BDC_RETAIL')
-        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'SO_ERDAT', SO_ERDAT_FROM, 'S', 'I', 'BT', SO_ERDAT_FROM_HIGH))
-        step.add_screen_item(ScreenItem('P_WRITST', ' '))
-        step.add_screen_item(ScreenItem('P_WRIPRD', 'X'))
-        step.add_screen_item(ScreenItem('P_DELTST', ' '))
-        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'P_COMENT', SO_ERDAT_FROM))
-        while (step.get_screen_item('SO_ERDAT').low < SO_ERDAT_TO):
+
+        job = Job('ARV_RV_LIKP', start_datetime=START_DATETIME)
+
+        for delty in [ 'O', 'I', 'R', ]:
+
+            step = Step('S3LIKPPTS','BDC_RETAIL')
+            step.add_screen_item(ScreenItem('P_DELTY', delty))
+            step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'SO_ERDAT', SO_ERDAT_FROM, 'S', 'I', 'BT', SO_ERDAT_FROM_HIGH))
+            step.add_screen_item(ScreenItem('C_NOTRA', 'X'))
             job.add_step(step)
-            step = step.next()
-        self.add_job(job)
+
+            step = Step('S3LIKPWRS','BDC_RETAIL')
+            step.add_screen_item(ScreenItem('P_DELTY', delty))
+            step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'SO_ERDAT', SO_ERDAT_FROM, 'S', 'I', 'BT', SO_ERDAT_FROM_HIGH))
+            step.add_screen_item(ScreenItem('C_NOTRA', 'X'))
+            step.add_screen_item(ScreenItem('P_WRITST', ' '))
+            step.add_screen_item(ScreenItem('P_WRIPRD', 'X'))
+            step.add_screen_item(ScreenItem('P_DELTST', ' '))
+            step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'P_COMENT', SO_ERDAT_FROM))
+            job.add_step(step)
+
+        while (job.get_screen_item('SO_ERDAT').low <= SO_ERDAT_TO):
+            self.add_job(job)
+            job = job.next(ExecutionInterval(datetime.timedelta(seconds=(EXECUTION_INTERVAL))))
 
 
 class SD_VBRKConfig(Config):
 
     def __init__(self):
 
-        SO_ERDAT_FROM = '20101101'
-        SO_ERDAT_FROM_HIGH = '20101107'
-        SO_ERDAT_TO = '20160427'
+        SO_ERDAT_FROM = '20150501'
+        SO_ERDAT_FROM_HIGH = '20150507'
+        SO_ERDAT_TO = '20150531'
+        START_DATETIME = datetime.datetime(2018, 7, 6, 17, 20)
+        EXECUTION_INTERVAL = 30*60
 
         super(SD_VBRKConfig, self).__init__()
-        job = Job('ARV_SD_VBRK')
+        job = Job('ARV_SD_VBRK', start_datetime=START_DATETIME)
+        
+        step = Step('S3VBRKPTS','BDC_RETAIL')
+        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'SO_ERDAT', SO_ERDAT_FROM, 'S', 'I', 'BT', SO_ERDAT_FROM_HIGH))
+        job.add_step(step)
+
         step = Step('S3VBRKWRS','BDC_RETAIL')
         step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'SO_ERDAT', SO_ERDAT_FROM, 'S', 'I', 'BT', SO_ERDAT_FROM_HIGH))
         step.add_screen_item(ScreenItem('P_WRITST', ' '))
         step.add_screen_item(ScreenItem('P_WRIPRD', 'X'))
         step.add_screen_item(ScreenItem('P_DELTST', ' '))
         step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'P_COMENT', SO_ERDAT_FROM))
-        while (step.get_screen_item('SO_ERDAT').low < SO_ERDAT_TO):
-            job.add_step(step)
-            step = step.next()
-        self.add_job(job)
+        job.add_step(step)
+
+        while (job.get_screen_item('SO_ERDAT').low <= SO_ERDAT_TO):
+            self.add_job(job)
+            job = job.next(ExecutionInterval(datetime.timedelta(seconds=(EXECUTION_INTERVAL))))
+
 
 
 class S623Config(Config):
@@ -265,18 +306,27 @@ class WINDConfig(Config):
 
 class MM_EKKOConfig(Config):
 
+
     def __init__(self):
 
-        ER_BEDAT_FROM = '20101130'
-        ER_BEDAT_TO = '20130607'
+        TIPOS_PEDIDO_TRANSFERENCIA = [
+            'EUB', 'UB', 'ZADI', 'ZPAL', 'ZPAT', 'ZPDD', 'ZPDI', 'ZPEX', 'ZPHO', 'ZPPD',
+            'ZPPI', 'ZPPR', 'ZPTC', 'ZPTD', 'ZPTL', 'ZPTP', 'ZPTT', 'ZPUE', 'ZPVC', 'ZRCL',
+            'ZREP', 'ZTCD', 'ZVDL', 'ZZRO',
+            ]
+
+        ER_BEDAT_FROM = '20130607'
+        ER_BEDAT_TO = '20170710'
         EXECUTION_INTERVAL = 1*60*60
-        START_DATETIME = datetime.datetime(2018, 5, 30, 14)
+        START_DATETIME = datetime.datetime(2018, 7, 10, 16)
 
         super(MM_EKKOConfig, self).__init__()
         job = Job('ARV_MM_EKKO', start_datetime=START_DATETIME)
 
         step_pre = Step('RM06EV47','BDC_RETAIL')
         step_pre.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=1), 'ER_BEDAT', ER_BEDAT_FROM, 'S', 'I', 'EQ'))
+        for bsart in TIPOS_PEDIDO_TRANSFERENCIA:
+            step_pre.add_screen_item(ScreenItem('ER_BSART', bsart, 'S', 'I', 'EQ'))
         step_pre.add_screen_item(ScreenItem('ER_ANDAT', datetime.date.today().strftime('%Y%m%d')))
         step_pre.add_screen_item(ScreenItem('ER_CDAT', 'X'))
         step_pre.add_screen_item(ScreenItem('P_PRETST', ' '))
@@ -284,6 +334,8 @@ class MM_EKKOConfig(Config):
 
         step = Step('RM06EW70','BDC_RETAIL')
         step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=1), 'ER_BEDAT', ER_BEDAT_FROM, 'S', 'I', 'EQ'))
+        for bsart in TIPOS_PEDIDO_TRANSFERENCIA:
+            step.add_screen_item(ScreenItem('ER_BSART', bsart, 'S', 'I', 'EQ'))
         step.add_screen_item(ScreenItem('ER_AEDAT', 'X'))
         step.add_screen_item(ScreenItem('P_WRITST', ' '))
         step.add_screen_item(ScreenItem('P_WRIPRD', 'X'))
@@ -293,9 +345,9 @@ class MM_EKKOConfig(Config):
         job.add_step(step_pre)
         job.add_step(step)
 
-        while (job.get_screen_item('ER_BEDAT').low < ER_BEDAT_TO):
+        while (job.get_screen_item('ER_BEDAT').low <= ER_BEDAT_TO):
             self.add_job(job)
-            job = job.next(datetime.timedelta(seconds=(EXECUTION_INTERVAL)))
+            job = job.next(ExecutionInterval(datetime.timedelta(seconds=(EXECUTION_INTERVAL))))
 
 
 
