@@ -125,20 +125,21 @@ class CO_ITEMConfig(Config):
 
 class MM_MATBELConfig(Config):
 
-    START_DATETIME = datetime.datetime(2018, 7, 10, 12)
-    S_BUDAT_FROM = '20120504'
-    S_BUDAT_TO = '20160711'
+    START_DATETIME = datetime.datetime(2018, 7, 17, 16)
+    S_BUDAT_FROM = '20121018'
+    S_BUDAT_FROM_HIGH = '20121023'
+    S_BUDAT_TO = '20160717'
     EXECUTION_INTERVAL = 60*60
 
     def _create_step(self, _pos):
 
         step = Step('RM07MARCS','BDC_RETAIL')
-        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=1), 'S_BUDAT', MM_MATBELConfig.S_BUDAT_FROM, 'S', 'I', 'EQ'))
+        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=6), 'S_BUDAT', MM_MATBELConfig.S_BUDAT_FROM, 'S', 'I', 'BT', MM_MATBELConfig.S_BUDAT_FROM_HIGH))
         step.add_screen_item(ScreenItem('POS', _pos))
         step.add_screen_item(ScreenItem('P_WRITST', ' '))
         step.add_screen_item(ScreenItem('P_WRIPRD', 'X'))
         step.add_screen_item(ScreenItem('P_DELTST', ' '))
-        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=1), 'P_COMENT', MM_MATBELConfig.S_BUDAT_FROM))
+        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=6), 'P_COMENT', MM_MATBELConfig.S_BUDAT_FROM))
         return step
 
     def __init__(self):
@@ -190,11 +191,11 @@ class RV_LIKPConfig(Config):
 
     def __init__(self):
 
-        SO_ERDAT_FROM = '20150501'
-        SO_ERDAT_FROM_HIGH = '20150507'
-        SO_ERDAT_TO = '20150531'
-        START_DATETIME = datetime.datetime(2018, 7, 6, 15, 40)
-        EXECUTION_INTERVAL = 20*60
+        SO_ERDAT_FROM = '20101130'
+        SO_ERDAT_FROM_HIGH = '20101206'
+        SO_ERDAT_TO = '20160729'
+        START_DATETIME = datetime.datetime(2018, 7, 18, 11, 15)
+        EXECUTION_INTERVAL = 60*60
 
         super(RV_LIKPConfig, self).__init__()
 
@@ -227,11 +228,11 @@ class SD_VBRKConfig(Config):
 
     def __init__(self):
 
-        SO_ERDAT_FROM = '20150501'
-        SO_ERDAT_FROM_HIGH = '20150507'
-        SO_ERDAT_TO = '20150531'
-        START_DATETIME = datetime.datetime(2018, 7, 6, 17, 20)
-        EXECUTION_INTERVAL = 30*60
+        SO_ERDAT_FROM = '20101201'
+        SO_ERDAT_FROM_HIGH = '20101207'
+        SO_ERDAT_TO = '20160819'
+        START_DATETIME = datetime.datetime(2018, 7, 25, 11, 30)
+        EXECUTION_INTERVAL = 2*60*60
 
         super(SD_VBRKConfig, self).__init__()
         job = Job('ARV_SD_VBRK', start_datetime=START_DATETIME)
