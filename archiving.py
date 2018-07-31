@@ -125,11 +125,11 @@ class CO_ITEMConfig(Config):
 
 class MM_MATBELConfig(Config):
 
-    START_DATETIME = datetime.datetime(2018, 7, 17, 16)
-    S_BUDAT_FROM = '20121018'
-    S_BUDAT_FROM_HIGH = '20121023'
-    S_BUDAT_TO = '20160717'
-    EXECUTION_INTERVAL = 60*60
+    START_DATETIME = datetime.datetime(2018, 7, 23, 20)
+    S_BUDAT_FROM = '20131212'
+    S_BUDAT_FROM_HIGH = '20131217'
+    S_BUDAT_TO = '20160823'
+    EXECUTION_INTERVAL = 4*60*60
 
     def _create_step(self, _pos):
 
