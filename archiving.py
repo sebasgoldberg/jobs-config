@@ -125,21 +125,21 @@ class CO_ITEMConfig(Config):
 
 class MM_MATBELConfig(Config):
 
-    START_DATETIME = datetime.datetime(2018, 7, 23, 20)
-    S_BUDAT_FROM = '20131212'
-    S_BUDAT_FROM_HIGH = '20131217'
-    S_BUDAT_TO = '20160823'
+    START_DATETIME = datetime.datetime(2018, 8, 15, 8)
+    S_BUDAT_FROM = '20160101'
+    S_BUDAT_FROM_HIGH = '20160103'
+    S_BUDAT_TO = '20160830'
     EXECUTION_INTERVAL = 4*60*60
 
     def _create_step(self, _pos):
 
         step = Step('RM07MARCS','BDC_RETAIL')
-        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=6), 'S_BUDAT', MM_MATBELConfig.S_BUDAT_FROM, 'S', 'I', 'BT', MM_MATBELConfig.S_BUDAT_FROM_HIGH))
+        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=3), 'S_BUDAT', MM_MATBELConfig.S_BUDAT_FROM, 'S', 'I', 'BT', MM_MATBELConfig.S_BUDAT_FROM_HIGH))
         step.add_screen_item(ScreenItem('POS', _pos))
         step.add_screen_item(ScreenItem('P_WRITST', ' '))
         step.add_screen_item(ScreenItem('P_WRIPRD', 'X'))
         step.add_screen_item(ScreenItem('P_DELTST', ' '))
-        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=6), 'P_COMENT', MM_MATBELConfig.S_BUDAT_FROM))
+        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=3), 'P_COMENT', MM_MATBELConfig.S_BUDAT_FROM))
         return step
 
     def __init__(self):
@@ -228,25 +228,25 @@ class SD_VBRKConfig(Config):
 
     def __init__(self):
 
-        SO_ERDAT_FROM = '20101201'
-        SO_ERDAT_FROM_HIGH = '20101207'
-        SO_ERDAT_TO = '20160819'
-        START_DATETIME = datetime.datetime(2018, 7, 25, 11, 30)
+        SO_ERDAT_FROM = '20150415'
+        SO_ERDAT_FROM_HIGH = '20150417'
+        SO_ERDAT_TO = '20160830'
+        START_DATETIME = datetime.datetime(2018, 8, 15, 9, 30)
         EXECUTION_INTERVAL = 2*60*60
 
         super(SD_VBRKConfig, self).__init__()
         job = Job('ARV_SD_VBRK', start_datetime=START_DATETIME)
         
         step = Step('S3VBRKPTS','BDC_RETAIL')
-        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'SO_ERDAT', SO_ERDAT_FROM, 'S', 'I', 'BT', SO_ERDAT_FROM_HIGH))
+        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=3), 'SO_ERDAT', SO_ERDAT_FROM, 'S', 'I', 'BT', SO_ERDAT_FROM_HIGH))
         job.add_step(step)
 
         step = Step('S3VBRKWRS','BDC_RETAIL')
-        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'SO_ERDAT', SO_ERDAT_FROM, 'S', 'I', 'BT', SO_ERDAT_FROM_HIGH))
+        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=3), 'SO_ERDAT', SO_ERDAT_FROM, 'S', 'I', 'BT', SO_ERDAT_FROM_HIGH))
         step.add_screen_item(ScreenItem('P_WRITST', ' '))
         step.add_screen_item(ScreenItem('P_WRIPRD', 'X'))
         step.add_screen_item(ScreenItem('P_DELTST', ' '))
-        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=7), 'P_COMENT', SO_ERDAT_FROM))
+        step.add_screen_item(ScreenItemDeltaDate(datetime.timedelta(days=3), 'P_COMENT', SO_ERDAT_FROM))
         job.add_step(step)
 
         while (job.get_screen_item('SO_ERDAT').low <= SO_ERDAT_TO):
