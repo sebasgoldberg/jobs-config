@@ -4,7 +4,7 @@ from jobconfig import *
 
 import raconfig
 
-DATA_INICIO = datetime.datetime(3001, 1, 1)
+DATA_INICIO = datetime.datetime(3002, 1, 1)
 QUANTIDADE_DIAS_PLANEJAR = 2
 
 class Bandeira:
