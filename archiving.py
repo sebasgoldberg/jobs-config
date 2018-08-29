@@ -356,13 +356,13 @@ class MM_EKKOConfig(Config):
 # @todo Testar
 class FI_DOCUMNTConfig(Config):
 
-    def __init__(self):
+    def main_execution(self):
 
         START_DATETIME = datetime.datetime(2018, 6, 20, 18)
         EXECUTION_INTERVAL = 24*60*60
         PERIOD_FROM = datetime.datetime(2010, 11, 1)
         PERIOD_TO = '201607'
-        
+
         super(FI_DOCUMNTConfig, self).__init__()
         
         job = Job('ARV_FI_DOCUMNT', start_datetime=START_DATETIME)
@@ -378,11 +378,58 @@ class FI_DOCUMNTConfig(Config):
         step.add_screen_item(ScreenItem('P_DELTST', ' '))
         step.add_screen_item(ScreenItemYearPeriodDeltaByPeriod(PERIOD_FROM, 'P_COMENT'))
         job.add_step(step)
+
         while (job.get_screen_item('P_COMENT').low <= PERIOD_TO):
             self.add_job(job)
             job = job.next(
                 ExecutionInterval(datetime.timedelta(seconds=(EXECUTION_INTERVAL)))
                 )
+
+
+    def maintenance_execution(self):
+
+        START_DATETIME = datetime.datetime(2018, 9, 5, 22)
+        PERIOD_FROM = datetime.datetime(2016, 8, 1)
+        PERIOD_TO = '201712'
+
+        super(FI_DOCUMNTConfig, self).__init__()
+
+        jobs = []
+        
+        start_datetimes = [START_DATETIME,
+                START_DATETIME + datetime.timedelta(days=10),
+                START_DATETIME + datetime.timedelta(days=20)]
+
+        for i in range(len(start_datetimes)):
+
+            sdt = start_datetimes[i]
+
+            job = Job('ARV_FI_DOCUMNT_%s' % i, start_datetime=sdt)
+            step = Step('FI_DOCUMNT_WRI','BDC_RETAIL')
+            step.add_screen_item(ScreenItemYearDeltaByPeriod(PERIOD_FROM,'P_VGJAHR'))
+            step.add_screen_item(ScreenItemPeriodDeltaByPeriod(PERIOD_FROM,'P_VMONAT'))
+            step.add_screen_item(ScreenItemYearDeltaByPeriod(PERIOD_FROM,'P_BGJAHR'))
+            step.add_screen_item(ScreenItemPeriodDeltaByPeriod(PERIOD_FROM,'P_BMONAT'))
+            step.add_screen_item(ScreenItem('P_CPUTG', '731'))
+            step.add_screen_item(
+                ScreenItemDateDeltaByPeriod(
+                    sdt-datetime.timedelta(days=1), 'P_STAG'))
+            step.add_screen_item(ScreenItem('P_WRITST', ' '))
+            step.add_screen_item(ScreenItem('P_WRIPRD', 'X'))
+            step.add_screen_item(ScreenItem('P_DELTST', ' '))
+            step.add_screen_item(ScreenItemYearPeriodDeltaByPeriod(PERIOD_FROM, 'P_COMENT'))
+            job.add_step(step)
+            jobs.append(job)
+
+        while (jobs[0].get_screen_item('P_COMENT').low <= PERIOD_TO):
+            new_jobs = []
+            for job in jobs:
+                self.add_job(job)
+                new_jobs.append(job.next(MonthlyExecutionInterval()))
+            jobs = new_jobs
+
+    def __init__(self):
+        self.maintenance_execution()
 
 
 import sys

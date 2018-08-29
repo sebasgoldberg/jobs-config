@@ -229,10 +229,13 @@ class ScreenItemDeltaByPeriod(ScreenItem):
     def get_value_from_period_datetime(self):
         raise Exception("Abstract method")
 
+    """
+    Not use days grather than 28.
+    """
     def get_next_period_datetime(self):
         dt1 = self.period_datetime.replace(day=1)
         dt2 = dt1 + datetime.timedelta(days=32)
-        dt3 = dt2.replace(day=1)
+        dt3 = dt2.replace(day=self.period_datetime.day)
         return dt3
         
     def next(self):
@@ -256,4 +259,10 @@ class ScreenItemYearPeriodDeltaByPeriod(ScreenItemDeltaByPeriod):
     def get_value_from_period_datetime(self):
         return self.period_datetime.strftime('%Y%m')
 
+"""
+Not use days grather than 28.
+"""
+class ScreenItemDateDeltaByPeriod(ScreenItemDeltaByPeriod):
 
+    def get_value_from_period_datetime(self):
+        return self.period_datetime.strftime('%Y%m%d')
