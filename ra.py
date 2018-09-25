@@ -4,8 +4,8 @@ from jobconfig import *
 
 import raconfig
 
-DATA_INICIO = datetime.datetime(3002, 1, 1)
-QUANTIDADE_DIAS_PLANEJAR = 2
+DATA_INICIO = datetime.datetime(2018, 9, 19)
+QUANTIDADE_DIAS_PLANEJAR = 7
 
 class Bandeira:
 
@@ -231,7 +231,7 @@ class RAConfig(Config):
         super(RAConfig, self).__init__()
 
         EXECUTION_INTERVAL = 24*60*60
-        DATA_EXECUCAO_TO = (DATA_INICIO + datetime.timedelta(days=QUANTIDADE_DIAS_PLANEJAR)).strftime('%Y%m%d')
+        DATA_EXECUCAO_TO = (DATA_INICIO + datetime.timedelta(days=(QUANTIDADE_DIAS_PLANEJAR-1))).strftime('%Y%m%d')
 
         jobs = []
         for loja in LOJAS:

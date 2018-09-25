@@ -9,3 +9,4 @@ package-lock.json
 *.swo
 __pycache__
 *.xls
+*.zip
